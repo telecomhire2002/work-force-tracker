@@ -34,11 +34,13 @@
     .stat-hero .sub { font-size:12px; color:var(--muted); margin-top:6px; }
     aside { grid-area:sidebar; background:linear-gradient(180deg, rgba(15,21,48,.9), rgba(15,21,48,.6)); border:1px solid rgba(124,155,255,.18); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:12px; overflow:visible;}
     .controls { display:grid; grid-template-columns:1fr; gap:8px; }
-    .filters { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .filters { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
     select { color:#000 !important; background:#fff !important; -webkit-text-fill-color:#000 !important; color-scheme: light !important; }
     select option, select optgroup { color:#000 !important; background:#fff !important; }
     select:focus { outline: 2px solid rgba(124,155,255,.6); outline-offset: 1px; }
-    input[type="text"] { width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(124,155,255,.25); background:#fff; color:#000; }
+    input[type="text"] { width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(124,155,255,.25); background:#fff; color:#000; 
+  height: 40px;
+}
     button { background:linear-gradient(180deg, #1a2350, #11183a); color:var(--text); border:1px solid rgba(124,155,255,.25); border-radius:12px; padding:10px 12px; font-weight:600; }
     .legend { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted);}
     .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
@@ -63,7 +65,8 @@
     .progress { position: absolute; left: 12px; top: 12px; z-index: 1000; background: rgba(11,16,32,.8); border:1px solid rgba(124,155,255,.35); color: var(--text);
                 padding: 8px 12px; border-radius: 12px; font-size: 12px; display:none; }
     .top-actions { position:absolute; right:12px; top:12px; z-index:1000; display:flex; gap:8px; }
-  </style>
+    .filters #searchBox { grid-column: 1 / -1; width:100%; box-sizing:border-box; }
+</style>
 
   <style>
     /* Increase map height in normal (non-full-window) mode */
@@ -130,8 +133,8 @@
         <div class="filters">
           <select id="circleFilter"><option value="">All Circles</option></select>
           <select id="roleFilter"><option value="">All Roles</option></select>
+          <input id="searchBox" type="text" placeholder="Search by name, Prose ID or PIN (6-digit)" />
         </div>
-        <input id="searchBox" type="text" placeholder="Search by name, Prose ID or PIN (6-digit)" />
         <div style="display:flex; gap:8px; margin-top:6px;">
           <button class="mic-btn" id="micBtn"><span class="mic-dot"></span> <span id="micLabel">Voice</span></button>
           <button id="locateBtn">▶ My Location</button>
