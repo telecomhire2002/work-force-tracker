@@ -64,6 +64,50 @@
                 padding: 8px 12px; border-radius: 12px; font-size: 12px; display:none; }
     .top-actions { position:absolute; right:12px; top:12px; z-index:1000; display:flex; gap:8px; }
   </style>
+
+  <style>
+    /* Increase map height in normal (non-full-window) mode */
+    #map { min-height: 800px !important; }
+  </style>
+
+
+  <style>
+    /* State and city label styles */
+    .state-name-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1b1f3b;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(27,31,59,0.15);
+      border-radius: 8px;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .city-name-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0f2340;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(27,31,59,0.12);
+      border-radius: 999px;
+      white-space: nowrap;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    }
+    /* Slight zoom-based scaling to keep labels readable */
+    .leaflet-zoom-5 .state-name-label { font-size: 11px; }
+    .leaflet-zoom-6 .state-name-label { font-size: 12px; }
+    .leaflet-zoom-7 .state-name-label { font-size: 13px; }
+    .leaflet-zoom-8 .state-name-label { font-size: 14px; }
+  </style>
+
 </head>
 <body>
   <div class="app" id="app">
@@ -25391,7 +25435,190 @@
 
     // Map + cluster
     const map = L.map('map', { zoomControl:true, preferCanvas:true, worldCopyJump:true }).setView([23.5937, 80.9629], 5);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:20 }).addTo(map);
+    
+    // === India states overlay (distinct colors) ===
+    (function(){
+      const palette = [
+        '#e6194b','#3cb44b','#ffe119','#4363d8','#f58231',
+        '#911eb4','#46f0f0','#f032e6','#bcf60c','#fabebe',
+        '#008080','#e6beff','#9a6324','#fffac8','#800000',
+        '#aaffc3','#808000','#ffd8b1','#000075','#808080'
+      ];
+      function colorFor(name){
+        let h=0; for(let i=0;i<name.length;i++){ h=(h*31 + name.charCodeAt(i))>>>0; }
+        return palette[h % palette.length];
+      }
+      const SRC = [
+        'https://raw.githubusercontent.com/geoharshit/indian_states/master/Indian_States.json',
+        'https://raw.githubusercontent.com/datameet/india-geojson/master/india_states.geojson'
+      ];
+      function load(idx){
+        idx = idx||0;
+        if(idx >= SRC.length){ console.warn('India states GeoJSON failed to load.'); return; }
+        fetch(SRC[idx]).then(r=>r.json()).then(geo=>{
+          const nameKeys = ['st_nm','NAME_1','STATE','NAME','state_name'];
+          const layer = L.geoJSON(geo, {
+            style: f => {
+              const p=f.properties||{}; const nm=nameKeys.map(k=>p[k]).find(Boolean)||'Unknown';
+              return { color:'#fff', weight:1, opacity:.8, fillColor:colorFor(nm), fillOpacity:.85 };
+            },
+            onEachFeature: (f,l) => {
+              const p=f.properties||{}; const nm=nameKeys.map(k=>p[k]).find(Boolean)||'Unknown';
+              l.bindTooltip(nm, { sticky:true, direction:'top' });
+            }
+          }).addTo(map);
+          try { map.fitBounds(layer.getBounds(), { padding:[20,20] }); } catch(e) {}
+        }).catch(()=>load(idx+1));
+      }
+      load();
+    })();
+
+    // === State name labels (always visible) ====
+    (function(){
+      // We'll place a divIcon at the polygon bounds center for each state
+      const nameKeys = ['st_nm','NAME_1','STATE','NAME','state_name'];
+      const stateLabelsLayer = L.layerGroup().addTo(map);
+
+      // Helper used by our earlier overlay: find the existing geojson layers and label them
+      function labelExistingStates(){
+        stateLabelsLayer.clearLayers();
+        let foundAny = false;
+        map.eachLayer(function(layer){
+          if (layer && layer.feature && layer.feature.type === 'Feature' && layer.getBounds) {
+            // Single feature
+            const center = layer.getBounds().getCenter();
+            const props = layer.feature.properties || {};
+            const nm = nameKeys.map(k=>props[k]).find(Boolean) || 'Unknown';
+            const icon = L.divIcon({ className:'state-name-label', html: nm });
+            L.marker(center, { icon }).addTo(stateLabelsLayer);
+            foundAny = True;
+          } else if (layer && layer.eachLayer && layer.toGeoJSON) {
+            // Likely the GeoJSON feature group
+            try {
+              layer.eachLayer(function(l){
+                if (l && l.feature && l.getBounds){
+                  const center = l.getBounds().getCenter();
+                  const props = l.feature.properties || {};
+                  const nm = nameKeys.map(k=>props[k]).find(Boolean) || 'Unknown';
+                  const icon = L.divIcon({ className:'state-name-label', html: nm });
+                  L.marker(center, { icon }).addTo(stateLabelsLayer);
+                  foundAny = true;
+                }
+              });
+            } catch(e){}
+          }
+        });
+        return foundAny;
+      }
+
+      // Try now, and also after slight delay (in case states load async)
+      labelExistingStates();
+      setTimeout(labelExistingStates, 600);
+      setTimeout(labelExistingStates, 1500);
+
+      // Recompute positions on zoom/end to keep them centered
+      map.on('zoomend moveend', function(){
+        labelExistingStates();
+      });
+    })();
+
+    // === Major city labels (show at medium+ zoom to avoid clutter) ===
+    (function(){
+      const cities = [
+        { n:'Mumbai',        lat:19.0760, lng:72.8777 },
+        { n:'Delhi',         lat:28.7041, lng:77.1025 },
+        { n:'Bengaluru',     lat:12.9716, lng:77.5946 },
+        { n:'Hyderabad',     lat:17.3850, lng:78.4867 },
+        { n:'Ahmedabad',     lat:23.0225, lng:72.5714 },
+        { n:'Chennai',       lat:13.0827, lng:80.2707 },
+        { n:'Kolkata',       lat:22.5726, lng:88.3639 },
+        { n:'Pune',          lat:18.5204, lng:73.8567 },
+        { n:'Jaipur',        lat:26.9124, lng:75.7873 },
+        { n:'Lucknow',       lat:26.8467, lng:80.9462 },
+        { n:'Surat',         lat:21.1702, lng:72.8311 },
+        { n:'Nagpur',        lat:21.1458, lng:79.0882 },
+        { n:'Indore',        lat:22.7196, lng:75.8577 },
+        { n:'Bhopal',        lat:23.2599, lng:77.4126 },
+        { n:'Patna',         lat:25.5941, lng:85.1376 },
+        { n:'Kochi',         lat:9.9312,  lng:76.2673 },
+        { n:'Bhubaneswar',   lat:20.2961, lng:85.8245 },
+        { n:'Guwahati',      lat:26.1445, lng:91.7362 },
+        { n:'Vadodara',      lat:22.3072, lng:73.1812 },
+        { n:'Varanasi',      lat:25.3176, lng:82.9739 },
+        { n:'Visakhapatnam', lat:17.6868, lng:83.2185 },
+        { n:'Jabalpur',      lat:23.1815, lng:79.9864 },
+        { n:'Noida',         lat:28.5355, lng:77.3910 },
+        { n:'Gurugram',      lat:28.4595, lng:77.0266 }
+      ];
+      const cityLayer = L.layerGroup().addTo(map);
+      function renderCities(){
+        cityLayer.clearLayers();
+        const z = map.getZoom();
+        const show = z >= 5; // show labels at zoom 5+; adjust if needed
+        if (!show) return;
+        cities.forEach(c=>{
+          const icon = L.divIcon({ className:'city-name-label', html: c.n });
+          L.marker([c.lat, c.lng], { icon }).addTo(cityLayer);
+        });
+      }
+      renderCities();
+      map.on('zoomend moveend', renderCities);
+    })();
+
+    // === Full-Window Map (no browser fullscreen; avoids white screen issues) ===
+    (function(){
+      // Create a wrapper that can go fixed and cover the viewport
+      const mapEl = map.getContainer();
+      let wrapper = document.getElementById('map-wrap-overlay');
+      if(!wrapper){
+        wrapper = document.createElement('div');
+        wrapper.id = 'map-wrap-overlay';
+        mapEl.parentNode.insertBefore(wrapper, mapEl);
+        wrapper.appendChild(mapEl);
+      }
+      const css = document.createElement('style');
+      css.textContent = `
+        #map-wrap-overlay { position: relative; }
+        #map-wrap-overlay.is-fullwindow { position: fixed; inset: 0; z-index: 9999; background: #0e1432; }
+        #map-wrap-overlay.is-fullwindow #map { width: 100vw !important; height: 100vh !important; }
+        /* ensure map has a reasonable height in normal layout */
+        #map { min-height: 560px; }
+      `;
+      document.head.appendChild(css);
+
+      // Leaflet control button
+      const FullWin = L.Control.extend({
+        options: { position: 'topleft' },
+        onAdd: function(){
+          const c = L.DomUtil.create('div', 'leaflet-bar');
+          const a = L.DomUtil.create('a', '', c);
+          a.href = '#'; a.title = 'Full Window';
+          a.innerHTML = '&#x26F6;';
+          L.DomEvent.on(a, 'click', (e)=>{
+            L.DomEvent.stop(e);
+            const makeFull = !wrapper.classList.contains('is-fullwindow');
+            if(makeFull){
+              wrapper.classList.add('is-fullwindow');
+              setTimeout(()=>{ map.invalidateSize(true); }, 0);
+              setTimeout(()=>{ map.invalidateSize(true); }, 120);
+            }else{
+              wrapper.classList.remove('is-fullwindow');
+              // Recompute desired height from the parent grid cell
+              const parent = wrapper.parentElement;
+              const h = parent ? parent.getBoundingClientRect().height : 0;
+              if(h>0){ mapEl.style.height = h+'px'; }
+              // force reflow then release explicit height
+              void mapEl.offsetHeight;
+              setTimeout(()=>{ map.invalidateSize(true); }, 0);
+              setTimeout(()=>{ mapEl.style.height=''; map.invalidateSize(true); }, 150);
+            }
+          });
+          return c;
+        }
+      });
+      map.addControl(new FullWin());
+    })();
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', { maxZoom: 20, crossOrigin: true }).addTo(map);
 
     const cluster = L.markerClusterGroup({
       showCoverageOnHover: false,
