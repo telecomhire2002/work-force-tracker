@@ -25707,8 +25707,22 @@ cluster.on('clusterclick', (ev) => {
       }
     }
 
-    circleSel.addEventListener('change', ()=>render(applyFilter(WORKERS)));
-    roleSel.addEventListener('change', ()=>render(applyFilter(WORKERS)));
+    function handleFilterChange(e) {
+  const isAllCircles = circleSel.value === '';
+  const isAllRoles   = roleSel.value === '';
+
+  if (isAllCircles && isAllRoles) {
+    // Both are "All" → refresh page
+    e.preventDefault?.();
+    window.location.reload();
+  } else {
+    // Otherwise → just re-render
+    render(applyFilter(WORKERS));
+  }
+}
+
+circleSel.addEventListener('change', handleFilterChange);
+roleSel.addEventListener('change', handleFilterChange);
     searchBox.addEventListener('input', ()=>render(applyFilter(WORKERS)));
 
     // Voice input
