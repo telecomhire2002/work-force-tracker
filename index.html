@@ -25620,6 +25620,16 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png
         return new L.DivIcon({ html:'<div><span>'+count+'</span></div>', className:'marker-cluster marker-cluster-'+c, iconSize: new L.Point(40, 40) });
       }
     }).addTo(map);
+    const totalEl = document.getElementById('totalWorkers');
+const totalWorkers = totalEl ? parseInt(totalEl.textContent, 10) : null; // e.g., 1577 shown in header
+// (header element exists here)
+cluster.on('clusterclick', (ev) => {
+  const count = ev.layer.getChildCount();
+  if (totalWorkers && count >= totalWorkers) {
+    ev.originalEvent?.preventDefault?.();
+    window.location.reload();
+  }
+});
 
     function makeDivIcon(cls="beacon") { return L.divIcon({ className:'', html:`<div class="${cls}"></div>`, iconSize:[16,16], iconAnchor:[8,8] }); }
 
@@ -25864,7 +25874,10 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png
     render(WORKERS);
     resolvePinsAndRerender();
 
-    document.getElementById('fitBtn').addEventListener('click', () => { render(applyFilter(WORKERS)); });
+    document.getElementById('fitBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.reload();  // full reload
+});
   </script>
 
 
