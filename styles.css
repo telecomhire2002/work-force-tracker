@@ -1,0 +1,525 @@
+  :root {
+      --bg: #0b1020;
+      --panel: #121836;
+      --card: #0f1530;
+      --text: #e8ecff;
+      --muted: #a9b2d8;
+      --accent: #7c9bff;
+      --accent-2: #78f3e9;
+      --glow: #80ffe0;
+  }
+
+  html,
+  body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(1000px 800px at 10% -10%, #17204d 0%, var(--bg) 45%), var(--bg);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+  }
+
+  .app {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      grid-template-rows: auto 1fr;
+      grid-template-areas: "header header" "sidebar map";
+      gap: 12px;
+      padding: 12px;
+      height: 100%;
+      box-sizing: border-box;
+  }
+
+  header {
+      grid-area: header;
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(120deg, rgba(124, 155, 255, .18), rgba(120, 243, 233, .12));
+      border: 1px solid rgba(124, 155, 255, .25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+      backdrop-filter: blur(8px);
+      min-height: 70px;
+      /* Ensure consistent header height */
+      position: relative; /* Establish stacking context */
+      z-index: 1000; /* High z-index to stay above map elements */
+  }
+
+  .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      /* Prevent shrinking of brand area */
+  }
+
+  .brand img {
+      height: 40px;
+      flex-shrink: 0;
+      /* Prevent image shrinking */
+  }
+
+  .title {
+      font-size: 20px;
+      font-weight: 800;
+      white-space: nowrap;
+      /* Prevent title text wrapping */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      /* Handle overflow gracefully */
+      max-width: 300px;
+      /* Set reasonable max width for title */
+  }
+
+  .stats {
+      display: flex;
+      gap: 14px;
+      align-items: stretch;
+      flex-shrink: 0;
+      /* Prevent stats from shrinking */
+      min-width: 300px;
+      /* Ensure consistent width for stats */
+  }
+
+  .stat-hero {
+      position: relative;
+      min-width: 280px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: radial-gradient(120% 120% at 10% 0%, rgba(124, 155, 255, .18), rgba(120, 243, 233, .10));
+      border: 1px solid rgba(124, 155, 255, .30);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(120, 243, 233, .06);
+      overflow: hidden;
+  }
+
+  .stat-hero::after {
+      content: "";
+      position: absolute;
+      inset: -40% -10% auto auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: conic-gradient(from 90deg, rgba(120, 243, 233, .6), rgba(124, 155, 255, .6), transparent 60%);
+      filter: blur(22px);
+      opacity: .35;
+      animation: sweep 6s linear infinite;
+  }
+
+  @keyframes sweep {
+      to {
+          transform: rotate(360deg);
+      }
+  }
+
+  .stat-hero .label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+  }
+
+  .stat-hero .value {
+      font-size: 44px;
+      font-weight: 900;
+      line-height: 1;
+      margin-top: 6px;
+      text-shadow: 0 0 24px rgba(124, 155, 255, .35);
+  }
+
+  .stat-hero .sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+  }
+
+  aside {
+      grid-area: sidebar;
+      background: linear-gradient(180deg, rgba(15, 21, 48, .9), rgba(15, 21, 48, .6));
+      border: 1px solid rgba(124, 155, 255, .18);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: visible;
+  }
+
+  .controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+  }
+
+  .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+  }
+
+  select {
+      color: #000 !important;
+      background: #fff !important;
+      -webkit-text-fill-color: #000 !important;
+      color-scheme: light !important;
+  }
+
+  select option,
+  select optgroup {
+      color: #000 !important;
+      background: #fff !important;
+  }
+
+  select:focus {
+      outline: 2px solid rgba(124, 155, 255, .6);
+      outline-offset: 1px;
+  }
+
+  input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(124, 155, 255, .25);
+      background: #fff;
+      color: #000;
+      height: 40px;
+  }
+
+  button {
+      background: linear-gradient(180deg, #1a2350, #11183a);
+      color: var(--text);
+      border: 1px solid rgba(124, 155, 255, .25);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 600;
+  }
+
+  .legend {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+  }
+
+  .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+  }
+
+  .dot.worker {
+      background: var(--accent-2);
+      box-shadow: 0 0 12px var(--accent-2);
+  }
+
+  .dot.me {
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+  }
+
+  .list {
+      overflow: auto;
+      flex: 1;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(9, 14, 36, .9), rgba(9, 14, 36, .6));
+      border: 1px solid rgba(124, 155, 255, .18);
+  }
+
+  .list-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(124, 155, 255, .12);
+      cursor: pointer;
+  }
+
+  .list-item:hover {
+      background: rgba(124, 155, 255, .08);
+  }
+
+  .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #0e132b;
+      background: linear-gradient(120deg, var(--accent-2), var(--accent));
+      border: 2px solid rgba(255, 255, 255, .1);
+  }
+
+  #map {
+      grid-area: map;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(124, 155, 255, .18);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+      position: relative; /* Ensure map is a containing block for absolute positioned elements */
+      z-index: 1; /* Lower z-index than header */
+  }
+
+  .beacon {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      border: 2px solid white;
+      box-shadow: 0 0 0 rgba(120, 243, 233, .7);
+      animation: ping 2.2s infinite;
+  }
+
+  @keyframes ping {
+      0% {
+          box-shadow: 0 0 0 0 rgba(120, 243, 233, .55);
+      }
+
+      70% {
+          box-shadow: 0 0 0 16px rgba(120, 243, 233, 0);
+      }
+
+      100% {
+          box-shadow: 0 0 0 0 rgba(120, 243, 233, 0);
+      }
+  }
+
+  .leaflet-popup-content-wrapper {
+      background: #0e1432;
+      color: var(--text);
+  }
+
+  .leaflet-popup-tip {
+      background: #0e1432;
+  }
+
+  .marker-cluster-small,
+  .marker-cluster-medium,
+  .marker-cluster-large {
+      background-color: rgba(0, 123, 255, 0.25) !important;
+      /* light blue outer */
+  }
+
+  .marker-cluster-small div,
+  .marker-cluster-medium div,
+  .marker-cluster-large div {
+      background-color: rgba(32, 62, 96, 0.95) !important;
+      /* solid blue inner */
+      color: #fff !important;
+      /* white text */
+      font-weight: 900;
+      box-shadow: 0 0 18px rgba(0, 123, 255, 0.6);
+  }
+
+  .progress {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 1000;
+      background: rgba(11, 16, 32, .8);
+      border: 1px solid rgba(124, 155, 255, .35);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      display: none;
+  }
+
+  .top-actions {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      z-index: 1000;
+      display: flex;
+      gap: 8px;
+  }
+
+  .filters #searchBox {
+      grid-column: 1 / -1;
+      width: 100%;
+      box-sizing: border-box;
+  }
+
+  /* Map takes full available height */
+  #map {
+      height: 100%;
+  }
+
+  /* State and city label styles */
+  .state-name-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1b1f3b;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(27, 31, 59, 0.15);
+      border-radius: 8px;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      z-index: 200 !important; /* BELOW worker circles */
+      max-width: 200px; /* Prevent labels from becoming too wide */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      visibility: visible !important; /* Ensure labels stay visible */
+      opacity: 1 !important; /* Ensure full opacity */
+  }
+
+  .city-name-label {
+      position: absolute;
+      transform: translate(-50%, -50%); /* Center by default */
+      pointer-events: none;
+      padding: 1px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0f2340;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(27, 31, 59, 0.12);
+      border-radius: 999px;
+      white-space: nowrap;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+      z-index: 100; /* Below worker markers but above map */
+  }
+
+  /* Slight zoom-based scaling to keep labels readable */
+  .leaflet-zoom-5 .state-name-label {
+      font-size: 11px;
+  }
+
+  .leaflet-zoom-6 .state-name-label {
+      font-size: 12px;
+  }
+
+  .leaflet-zoom-7 .state-name-label {
+      font-size: 13px;
+  }
+
+  .leaflet-zoom-8 .state-name-label {
+      font-size: 14px;
+  }
+
+  .state-label {
+      background: rgba(255, 255, 255, .75);
+      padding: 2px 6px;
+      border-radius: 4px;
+  }
+
+  /* Ensure proper spacing and prevent overlapping of header elements */
+  header>* {
+      flex-shrink: 0;
+      /* All direct children of header should not shrink */
+  }
+
+  /* Responsive header adjustments to prevent overlapping */
+  @media (max-width: 1200px) {
+      header {
+          flex-wrap: wrap;
+          gap: 10px;
+          padding: 12px 16px;
+      }
+
+      .brand {
+          margin-bottom: 5px;
+      }
+
+      .stats {
+          margin-top: 5px;
+      }
+
+      .title {
+          max-width: 250px;
+          font-size: 18px;
+      }
+  }
+
+  @media (max-width: 768px) {
+      header {
+          flex-direction: column;
+          align-items: stretch;
+          text-align: center;
+      }
+
+      .brand {
+          justify-content: center;
+          margin-bottom: 10px;
+      }
+
+      .stats {
+          justify-content: center;
+          margin-top: 0;
+      }
+
+      .title {
+          max-width: none;
+      }
+  }
+
+  /* Additional safeguards for dynamic content */
+  header .brand .title,
+  header .title {
+      position: relative;
+      z-index: 1;
+      /* Ensure title stays above other elements */
+  }
+
+  /* Ensure all leaflet elements stay within map bounds */
+  .leaflet-container {
+      position: relative;
+      /* Removed overflow: hidden as it was clipping state labels */
+  }
+
+  /* Ensure leaflet markers and popups have proper z-index */
+  .leaflet-marker-pane {
+      z-index: 600 !important; /* Worker markers above state labels */
+  }
+  
+  /* State labels should be BELOW worker circles */
+  .leaflet-marker-pane .leaflet-marker-icon.state-name-label,
+  .leaflet-marker-pane .leaflet-div-icon.state-name-label {
+      z-index: 200 !important; /* Below worker markers */
+  }
+  
+  .leaflet-popup-pane,
+  .leaflet-tooltip-pane {
+      z-index: 600 !important; /* Above state labels but below header */
+  }
+
+  /* Additional safeguards for state label visibility - BELOW worker circles */
+  .leaflet-marker-icon.state-name-label,
+  .leaflet-div-icon.state-name-label,
+  .leaflet-marker-icon .state-name-label {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 200 !important; /* BELOW worker circles */
+      position: absolute !important;
+      transform: translate(-50%, -50%) !important;
+      pointer-events: none !important;
+      padding: 2px 6px !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      color: #1b1f3b !important;
+      background: rgba(255, 255, 255, 0.85) !important;
+      border: 1px solid rgba(27, 31, 59, 0.15) !important;
+      border-radius: 8px !important;
+      white-space: nowrap !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+      max-width: 200px !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+  }
+
+  /* Ensure city labels are also visible */
+  .city-name-label,
+  .leaflet-marker-icon.city-name-label,
+  .leaflet-div-icon.city-name-label,
+  .leaflet-marker-icon .city-name-label {
+      z-index: 500 !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+  }
